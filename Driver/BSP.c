@@ -14,6 +14,8 @@ void BSP_Init(void)
 	ADXL313_Init();
 	
 	BSP_EXTI_Init();
+	
+	BSP_TIM_Init();
 }
 
 void BSP_GPIO_Init(void)
@@ -159,13 +161,13 @@ void BSP_EXTI_Init(void)
   EXTI_InitStructure.EXTI_Line = EXTI_Line7;
   EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
   EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-  EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+  EXTI_InitStructure.EXTI_LineCmd = DISABLE;
   EXTI_Init(&EXTI_InitStructure);
 
   NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
   NVIC_Init(&NVIC_InitStructure);
 	
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource0);
@@ -173,13 +175,13 @@ void BSP_EXTI_Init(void)
   EXTI_InitStructure.EXTI_Line = EXTI_Line0;
   EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
   EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-  EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+  EXTI_InitStructure.EXTI_LineCmd = DISABLE;
   EXTI_Init(&EXTI_InitStructure);
 
   NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
   NVIC_Init(&NVIC_InitStructure);
 }
 
@@ -310,6 +312,38 @@ void BSP_USART_Init(void)
 	USART_ClearFlag(USART1,USART_FLAG_TC); 
 }
 
+void BSP_TIM_Init(void)
+{
+	TIM_TimeBaseInitTypeDef TIM_TBITD;
+	TIM_OCInitTypeDef TIM_OCITD;
+	NVIC_InitTypeDef   NVIC_InitStructure;
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
+	
+	TIM_TBITD.TIM_Period = 10 - 1;
+	TIM_TBITD.TIM_Prescaler = 7200 - 1;
+	TIM_TBITD.TIM_ClockDivision = 0;
+	TIM_TBITD.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseInit(TIM2,&TIM_TBITD);
+	
+	TIM_OCITD.TIM_OCMode = TIM_OCMode_Timing;
+	TIM_OCITD.TIM_OutputState = TIM_OutputState_Enable;
+	TIM_OCITD.TIM_Pulse = 200;
+	TIM_OCITD.TIM_OCPolarity = TIM_OCPolarity_High;
+	TIM_OC1Init(TIM2,&TIM_OCITD);
+	
+	TIM_OC1PreloadConfig(TIM2,TIM_OCPreload_Disable);
+	
+	TIM_Cmd(TIM2,ENABLE);
+	
+	TIM_ITConfig(TIM2,TIM_IT_CC1,ENABLE);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+}
+
 void bsp_delayms(u32 counter)
 {
 	u32 temp = counter + bspdata.systime;
@@ -317,7 +351,7 @@ void bsp_delayms(u32 counter)
 	{
 		
 	}
-	 bspdata.systime = 0;
+//	 bspdata.systime = 0;
 }
 
 void fun_usartSend(USART_TypeDef *com ,u8 data)

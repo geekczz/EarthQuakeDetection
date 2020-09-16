@@ -2,7 +2,10 @@
 #include "math.h"
 
 MAIN_DATA mainData;
-int8_t Counter_i = 0;
+int32_t Counter_i = 0;
+u32 TimeStampA = 0;
+u32 TimeStampB = 0;
+u32 TimeStampDiff = 0;
 
 u8 serverRes[] = {0xAA,0xF5,0xF5,0xA6};  //应答包
 u8 logIn[] = {0xA1, 0x00, 0x00, 0xA6}; //上线包
@@ -11,7 +14,6 @@ u8 txData[] = {0xA5,0x64,0x01,0x01,0xA6};
 *txData[1]:电量百分比
 *txData[2]:电磁铁开关状态   0(报警，不正常)
 *txData[3]:主动电源开关状态 0(关闭，不正常)
-
 *************************/
 int main(void)
 {
@@ -115,12 +117,12 @@ int main(void)
       IWDG_Feed();
     }
     
-    bsp_delayms(100);
-    if(num++>=36000)
-    {
-      mainData.ClockFlag = 1;
-      num = 0;
-    }
+		/************************  串口定时上传数据  ******************************/  
+		TimeStampA = bspdata.systime;
+//		fun_printf(USART1,"%.3f %.3f %.3f\n",adxl313_data.Acc_AxisX,adxl313_data.Acc_AxisY,mainData.MixAccData);
+		fun_printf(USART1,"%.3f\n",mainData.MixAccData);
+		TimeStampB = bspdata.systime;
+		TimeStampDiff = TimeStampB - TimeStampA;
 	}
 }
 
@@ -141,9 +143,9 @@ void BuzzerRing(u8 times, u16 interval)
   BuzzerOff();
   for(i=0;i<times;i++)
   {
-    BuzzerOn();
+//    BuzzerOn();
     bsp_delayms(interval);
-    BuzzerOff();
+//    BuzzerOff();
     bsp_delayms(interval);
   }
 	bsp_delayms(100);

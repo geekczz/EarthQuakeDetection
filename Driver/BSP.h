@@ -21,6 +21,7 @@ static void BSP_EXTI_Init(void);
 static void BSP_DMA_Init(void);
 static void BSP_ADC_Init(void);
 static void BSP_USART_Init(void);
+static void BSP_TIM_Init(void);
 /* External Function */
 extern void BSP_Init(void);
 extern void fun_usartSend(USART_TypeDef *com ,u8 data);

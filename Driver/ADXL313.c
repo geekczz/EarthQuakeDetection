@@ -19,7 +19,7 @@ uint8_t ADXL313_Init(void)
 	//失能I2C，Link，关闭auto_sleep，待机，关闭睡眠
 	ADXL313_WriteRagData(REG_POWER_CTL,0x60);
 	
-	ADXL313_WriteRagData(REG_BW_RATE,0x09);
+	ADXL313_WriteRagData(REG_BW_RATE,0x0F);
 	
 	ADXL313_WriteRagData(REG_FIFO_CTL,0x00);
 	
@@ -51,14 +51,18 @@ uint8_t ADXL313_Init(void)
 
 void ADXL313_SetThresholdValue(float ThresholdValue)
 {
-	uint8_t DataTemp = 0;
+//	uint8_t DataTemp = 0;
+	
+//	if(ThresholdValue<0)ThresholdValue = 0;
+//	if(ThresholdValue>2.0)ThresholdValue = 2.0;
+	
+//	DataTemp = (uint8_t)(ThresholdValue / 0.015625f);
+//	
+//	ADXL313_WriteRagData(REG_THRESH_ACT,DataTemp);
 	
 	if(ThresholdValue<0)ThresholdValue = 0;
 	if(ThresholdValue>2.0)ThresholdValue = 2.0;
-	
-	DataTemp = (uint8_t)(ThresholdValue / 0.015625f);
-	
-	ADXL313_WriteRagData(REG_THRESH_ACT,DataTemp);
+	mainData.MixThresholdValue = ThresholdValue*1000;
 }
 
 uint8_t ADXL313_GetRegData(uint8_t Reg)

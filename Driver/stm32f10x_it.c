@@ -24,6 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
 #include "GLOBAL.h"
+#include "math.h"
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
   */
@@ -152,9 +153,53 @@ void SysTick_Handler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
-
 uint32_t Counter_I = 0;
 uint32_t COunter_J = 0;
+void TIM2_IRQHandler(void)
+{
+  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET)
+  {
+    TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
+		
+		ADXL313_Get3AxisData();
+		mainData.MixAccData = sqrtf((adxl313_data.Acc_AxisX * adxl313_data.Acc_AxisX) + (adxl313_data.Acc_AxisY * adxl313_data.Acc_AxisY));
+		
+		if(mainData.MixAccData >= mainData.MixThresholdValue)
+		{
+			mainData.AccFlag = 1;
+			if(mainData.BuzzerFlag == 1)
+			{
+				if(mainData.AccFirst == 0) //保证加速度计只报警一次
+				{
+					mainData.AccFirst = 1;
+					CHARGER_OFF; //关断负载开关
+					
+					for(Counter_I = 0;Counter_I<1000;Counter_I++)
+					{
+						__nop();
+					}
+					RELAY_ON;
+					
+					for(Counter_I = 0;Counter_I<3000;Counter_I++)
+					{
+						for(COunter_J = 0;COunter_J<1500;COunter_J++)
+						{
+							__nop();
+						}
+					}
+					
+					//关闭电磁铁
+					RELAY_OFF;
+					for(Counter_I = 0;Counter_I<1000;Counter_I++)
+					{
+						__nop();
+					}
+					CHARGER_ON;
+				}
+			}
+		}
+  }
+}
 
 void EXTI0_IRQHandler(void)
 {

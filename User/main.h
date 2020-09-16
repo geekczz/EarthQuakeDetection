@@ -38,6 +38,9 @@ typedef struct MAIN_DATA
   
   float test;
   u8 LoraRx[U2_LENGTH];
+	
+	float MixAccData;
+	u16 MixThresholdValue;
 }MAIN_DATA;
 
 extern MAIN_DATA mainData;
